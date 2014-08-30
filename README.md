@@ -1,12 +1,11 @@
 # react-commits-graph
-===================
 
 react component to render an svg graph of git commits
 
 
 ## example
 
-```
+```js
 React = require('react');
 CommitsGraph = require('react-commits-graph');
 commits = require('./commits.json');
@@ -27,5 +26,4 @@ function render() {
 }
 
 render();
-
 ```
