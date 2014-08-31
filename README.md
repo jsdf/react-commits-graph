@@ -1,7 +1,8 @@
 # react-commits-graph
 
-react component to render an svg graph of git commits
+a react component to render an svg graph of git commits
 
+![react-commits-graph](docs/react-commits-graph.png)
 
 ## example
 
