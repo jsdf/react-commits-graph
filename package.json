@@ -8,7 +8,8 @@
     "prepublish": "./prepublish.sh",
     "build": "cjsx -cbo lib/ src/*.coffee",
     "watch": "cjsx -cbwo lib/ src/*.coffee",
-    "demo": "examples/run.sh"
+    "demo": "examples/run.js",
+    "demo-watch": "examples/run.js watch"
   },
   "author": "James Friend <james@jsdf.co> (http://jsdf.co/)",
   "license": "MIT",

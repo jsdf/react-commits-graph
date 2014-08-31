@@ -1,9 +1,9 @@
 
 React = require('react')
 CommitsGraph = require('../')
-commits = require('./input.json')
+commits = require('./commits.json')
 
-var graphNode = document.querySelector('#graph')
+var graphEl = document.querySelector('#graph')
 
 var selected = null
 
@@ -19,7 +19,7 @@ function render() {
     selected: selected,
     height: window.innerHeight,
     width: window.innerWidth,
-  }), graphNode)
+  }), graphEl)
 }
 
 window.addEventListener('resize', render)

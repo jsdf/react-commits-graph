@@ -62,15 +62,13 @@ distance = (point1, point2) ->
 
 CommitsGraphMixin =
   getDefaultProps: ->
-    height: 800
-    width: 800
     y_step: 20
     x_step: 20
-    orientation: "vertical"
     dotRadius: 3
     lineWidth: 2
     selected: null
     mirror: false
+    unstyled: false
 
   componentWillReceiveProps: ->
     @graphData = null
@@ -88,7 +86,7 @@ CommitsGraphMixin =
 
     smallestDistance = Infinity
     closestCommit = null
-    for commit in @renderedCommitsData
+    for commit in @renderedCommitsPositions
       commitDistance = distance(cursorLoc, commit)
       if commitDistance < smallestDistance
         smallestDistance = commitDistance
@@ -107,20 +105,14 @@ CommitsGraphMixin =
     @getContentWidth()
 
   getContentWidth: ->
-    if @props.orientation is "horizontal"
-      (@getGraphData().length + 2) * @props.x_step
-    else
-      (@getBranchCount() + 0.5) * @props.x_step
+    (@getBranchCount() + 0.5) * @props.x_step
 
   getHeight: ->
     return @props.height if @props.height?
     @getContentHeight()
 
   getContentHeight: ->
-    if @props.orientation is "horizontal"
-      (@getBranchCount() + 0.5) * @props.y_step
-    else
-      (@getGraphData().length + 2) * @props.y_step
+    (@getGraphData().length + 2) * @props.y_step
 
   getInvert: ->
     if @props.mirror
@@ -129,10 +121,23 @@ CommitsGraphMixin =
       0
 
   getOffset: ->
-    if @props.orientation is 'horizontal'
-      @getHeight() / 2 - @getContentHeight() / 2
-    else
-      @getWidth() / 2 - @getContentWidth() / 2
+    @getWidth() / 2 - @getContentWidth() / 2
+
+  renderRouteNode: (svgPathDataAttribute, branch) ->    
+    unless @props.unstyled
+      colour = getColour(branch)
+      style =
+        'stroke': colour
+        'stroke-width': @props.lineWidth
+        'fill': 'none'
+
+    classes = "commits-graph-branch-#{branch}"
+
+    <path
+      d={svgPathDataAttribute}
+      style={style}
+      className={classes}
+    />
 
   renderRoute: (commit_idx, [from, to, branch]) ->
     {x_step, y_step} = @props
@@ -141,57 +146,51 @@ CommitsGraphMixin =
 
     svgPath = new SVGPathData
 
-    if @props.orientation is "horizontal"
-      from_x = invert + (commit_idx + 0.5) * x_step
-      from_y = (from + 1) * y_step
-      to_x = invert + (commit_idx + 0.5 + 1) * x_step
-      to_y = (to + 1) * y_step
+    from_x = offset + invert + (from + 1) * x_step
+    from_y = (commit_idx + 0.5) * y_step
+    to_x = offset + invert + (to + 1) * x_step
+    to_y = (commit_idx + 0.5 + 1) * y_step
 
-      svgPath.moveTo(from_x, from_y)
-      if from_y is to_y
-        svgPath.lineTo(to_x, to_y)
-      else if from_y > to_y
-        svgPath.bezierCurveTo(
-          from_x - x_step / 3 * 2, from_y + y_step / 4,
-          to_x + x_step / 3 * 2, to_y - y_step / 4,
-          to_x, to_y
-        )
-      else 
-        if from_y < to_y
-          svgPath.bezierCurveTo(
-            from_x - x_step / 3 * 2, from_y - y_step / 4,
-            to_x + x_step / 3 * 2, to_y + y_step / 4,
-            to_x, to_y
-          )
+    svgPath.moveTo(from_x, from_y)
+    if from_x is to_x
+      svgPath.lineTo(to_x, to_y)
     else
-      from_x = offset + invert + (from + 1) * x_step
-      from_y = (commit_idx + 0.5) * y_step
-      to_x = offset + invert + (to + 1) * x_step
-      to_y = (commit_idx + 0.5 + 1) * y_step
+      svgPath.bezierCurveTo(
+        from_x - x_step / 4, from_y + y_step / 3 * 2,
+        to_x + x_step / 4, to_y - y_step / 3 * 2,
+        to_x, to_y
+      )
 
-      svgPath.moveTo(from_x, from_y)
-      if from_x is to_x
-        svgPath.lineTo(to_x, to_y)
-      else
-        svgPath.bezierCurveTo(
-          from_x - x_step / 4, from_y + y_step / 3 * 2,
-          to_x + x_step / 4, to_y - y_step / 3 * 2,
-          to_x, to_y
-        )
+    @renderRouteNode(svgPath.toString(), branch)
+
+  renderCommitNode: (x, y, sha, dot_branch) ->
+    radius = @props.dotRadius
 
     unless @props.unstyled
-      colour = getColour(branch)
+      colour = getColour(dot_branch)
+      if sha is @props.selected
+        strokeColour = '#000'
+        strokeWidth = 2
+      else
+        strokeColour = colour
+        strokeWidth = 1
       style =
-        stroke: colour
-        fill: 'none'
+        'stroke': strokeColour
+        'stroke-width': strokeWidth
+        'fill': colour
 
-    classes = "commits-graph-branch#{branch}"
+    selectedClass = 'selected' if @props.selected
+    classes = classSet("commits-graph-branch-#{dot_branch}", selectedClass)
 
-    <path
-      d={svgPath.toString()}
+    <circle 
+      cx={x}
+      cy={y}
+      r={radius}
       style={style}
+      onClick={@handleClick} 
+      data-sha={sha}
       className={classes}
-    />
+     />
 
   renderCommit: (idx, [sha, dot, routes_data]) ->
     [dot_offset, dot_branch] = dot
@@ -200,49 +199,22 @@ CommitsGraphMixin =
     {x_step, y_step} = @props
     offset = @getOffset()
     invert = @getInvert()
-    radius = @props.dotRadius
 
-    if @props.orientation is "horizontal"
-      x = invert + (idx + 0.5) * x_step
-      y = (dot_offset + 1) * y_step
-    else
-      x = offset + invert + (dot_offset + 1) * x_step
-      y = (idx + 0.5) * y_step
+    x = offset + invert + (dot_offset + 1) * x_step
+    y = (idx + 0.5) * y_step
 
-    unless @props.unstyled
-      if sha is @props.selected
-        colour = '#000'
-      else
-        colour = getColour(dot_branch)
-      style =
-        stroke: colour
-        fill: colour
-
-    selectedClass = 'selected' if @props.selected
-    classes = classSet("commits-graph-branch#{dot_branch}", selectedClass)
-
-    commitNode = (
-      <circle 
-        cx={x}
-        cy={y}
-        r={radius}
-        style={style}
-        onClick={@handleClick} 
-        data-sha={sha}
-        className={classes}
-       />
-    )
+    commitNode = @renderCommitNode(x, y, sha, dot_branch)
 
     routeNodes = for route, index in routes_data
       @renderRoute(idx, route)
 
-    @renderedCommitsData.push {sha, x, y}
+    @renderedCommitsPositions.push {x, y, sha}
 
     [commitNode, routeNodes]
 
   renderGraph: ->
     # reset lookup table of commit node locations
-    @renderedCommitsData = []
+    @renderedCommitsPositions = []
 
     allCommitNodes = []
     allRouteNodes = []
@@ -256,7 +228,8 @@ CommitsGraphMixin =
 
     height = @getHeight()
     width = @getWidth()
-    style = {height, width}
+    unless @props.unstyled
+      style = {height, width, cursor: 'pointer'}
 
     React.DOM.svg({height, width, style, children, onClick: @handleClick})
 
