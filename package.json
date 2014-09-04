@@ -11,6 +11,13 @@
     "demo": "examples/run.js",
     "demo-watch": "examples/run.js watch"
   },
+  "keywords": [
+    "react-component",
+    "react",
+    "git",
+    "graph",
+    "visualization"
+  ],
   "author": "James Friend <james@jsdf.co> (http://jsdf.co/)",
   "license": "MIT",
   "devDependencies": {
