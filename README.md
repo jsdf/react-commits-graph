@@ -27,3 +27,5 @@ function render() {
 
 render();
 ```
+
+Adapted from [tclh123/commits-graph](https://github.com/tclh123/commits-graph)
