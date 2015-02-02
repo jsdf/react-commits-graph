@@ -1,4 +1,3 @@
-# @cjsx React.DOM
 React = require 'react'
 
 CommitsGraphMixin = require './commits-graph-mixin'

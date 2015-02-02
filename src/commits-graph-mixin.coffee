@@ -1,4 +1,3 @@
-# @cjsx React.DOM
 React = require 'react'
 
 generateGraphData = require './generate-graph-data'
@@ -133,11 +132,10 @@ CommitsGraphMixin =
 
     classes = "commits-graph-branch-#{branch}"
 
-    <path
-      d={svgPathDataAttribute}
-      style={style}
-      className={classes}
-    />
+    React.DOM.path
+      d: svgPathDataAttribute
+      style: style
+      className: classes
 
   renderRoute: (commit_idx, [from, to, branch]) ->
     {x_step, y_step} = @props
@@ -182,15 +180,14 @@ CommitsGraphMixin =
     selectedClass = 'selected' if @props.selected
     classes = classSet("commits-graph-branch-#{dot_branch}", selectedClass)
 
-    <circle 
-      cx={x}
-      cy={y}
-      r={radius}
-      style={style}
-      onClick={@handleClick} 
-      data-sha={sha}
-      className={classes}
-     />
+    React.DOM.circle 
+      cx: x
+      cy: y
+      r: radius
+      style: style
+      onClick: @handleClick
+      'data-sha': sha
+      className: classes
 
   renderCommit: (idx, [sha, dot, routes_data]) ->
     [dot_offset, dot_branch] = dot
@@ -231,6 +228,13 @@ CommitsGraphMixin =
     unless @props.unstyled
       style = {height, width, cursor: 'pointer'}
 
-    React.DOM.svg({height, width, style, children, onClick: @handleClick})
+    svgProps = {height, width, style, children}
+
+    React.DOM.svg
+      onClick: @handleClick
+      height: height
+      width: width
+      style: style
+      children: children
 
 module.exports = CommitsGraphMixin
