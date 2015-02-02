@@ -11,26 +11,28 @@ adapted from [tclh123/commits-graph](https://github.com/tclh123/commits-graph)
 code to generate the graph above
 
 ```js
-var React = require('react');
-var CommitsGraph = require('react-commits-graph');
-var commits = require('./commits.json');
+var React = require('react')
+var CommitsGraph = require('react-commits-graph')
+var commits = require('./commits.json')
 
-var selected = null;
+var selected = null
 
 function handleClick(sha) {
-  selected = sha;
-  render();
+  selected = sha
+  render()
 }
 
 function render() {
-  React.renderComponent(CommitsGraph({
-    commits: commits,
-    onClick: handleClick,
-    selected: selected,
-  }), document.querySelector('#graph'));
+  React.render(
+    <CommitsGraph
+      commits={commits}
+      onClick={handleClick}
+      selected={selected}
+    />
+  ), document.body)
 }
 
-render();
+render()
 ```
 
 expected structure of `commits` prop:
