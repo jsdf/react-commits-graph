@@ -1,6 +1,6 @@
 {
   "name": "react-commits-graph",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "a react component to render an svg graph of git commits",
   "main": "index.js",
   "scripts": {
